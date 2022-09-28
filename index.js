@@ -1,15 +1,20 @@
 const form = document.forms['form'];
 
 let productionDate;
+let manufactureTime;
 let productName;
 let responsibleName;
 let selectedPackage;
 let selectedType;
-let productPosition;
+let productId;
 let products = [];
+let products2= ["uva", "pera", "manzana"];
+let targetId;
+let targetProduct;
+let autoIncrement = 1;
+let flagEditButton= 0; 
 
 showTime();
-//doSubmit();
 
 $(document).ready(function() { // esta función es para evitar que haya problemas con alguna etiqueta html antes de ejecutar la consulta
     $("#save_product").click(function() {
@@ -28,12 +33,31 @@ form.onsubmit = function(e){
     // $("#p1").text(JSON.stringify(products)); // 'convertir' un objeto o JSON en string
 
     if (e.submitter.id === "save_product") {
-        createProduct();
+        // createProduct((autoIncrement.toString()));
+        createProduct(autoIncrement);
         console.log(products);
         $("#p1").text(JSON.stringify(products)); // 'convertir' un objeto o JSON en string
+        autoIncrement = autoIncrement + 1;
     } else {
-        console.log(products);
-        $("#p1").text(JSON.stringify(products)); // 'convertir' un objeto o JSON en string
+        targetId = parseInt(document.getElementById("edit_input").value);
+        const index = products.findIndex(product => product.id === targetId);
+
+        if (index === -1){
+            alert("No existe ningún producto con ese Id");
+            throw new Error(message="no se encontró el producto");
+            
+        } else {
+            targetProduct = products[index]; // esto es redundante, la logica de este metodo debe ser revisada
+            console.log(targetProduct);
+        
+            let editedProduct = editProduct(targetId);
+            editProductById(targetId, editedProduct, products);
+            console.log(products);
+            $("#p1").text(JSON.stringify(products)); // 'convertir' un objeto o JSON en string
+            $("#save_product").toggle();
+            $("#save_changes").toggle();
+            flagEditButton = 0;
+        }
     }
 }
 
@@ -53,26 +77,33 @@ form.onsubmit = function(e){
 // });
 
 $("#edit_button").click(function() {
-    // document.getElementById("save_changes_button").hidden =false; 
-    $("#save_product").toggle();
-    $("#save_changes").toggle();
     
-    let targetPosition = document.getElementById("edit_input").value;
-    let targetProduct = products[targetPosition];
-    console.log(targetProduct);
+    if (flagEditButton === 0){
+        
+        flagEditButton= 1;
+        // document.getElementById("save_changes_button").hidden =false; 
+        if (products.length === 0){
+            alert("La lista de productos está vacia");
+            throw new Error(message="Arreglo de productos vacio");
 
-    editedProduct = editProduct(targetPosition);
-    editProductByPosition(targetPosition, editedProduct);
-
-    // $("#product_name").text("hhhh");
-    // document.getElementById("product_name").text(targetProduct.productName);
-    // document.getElementById("responsible_name").text(targetProduct.responsibleName);
-    // document.getElementsByName("type").text(targetProduct.type);
+        } else{
+            $("#save_product").toggle();
+            $("#save_changes").toggle();
+        }    
+        // $("#product_name").text("hhhh");
+        // document.getElementById("product_name").text(targetProduct.productName);
+        // document.getElementById("responsible_name").text(targetProduct.responsibleName);
+        // document.getElementsByName("type").text(targetProduct.type);
+    } else {
+        alert("Debe terminar la edición actual antes de una nueva edición");
+        throw new Error(message="Edición de producto sin terminar");
+    }
 });
 
 $("#delete_button").click(function() {
-    let targetPosition = document.getElementById("edit_input").value;
-    deleteProductByPosition(targetPosition, products);
+    
+    targetId = document.getElementById("delete_input").value;
+    deleteProductById(parseInt(targetId), products); // falta pedir confirmación para eliminar
     console.log(products);
     $("#p1").text(JSON.stringify(products)); // 'convertir' un objeto o JSON en string
 });
@@ -125,7 +156,33 @@ function showTime(){
     setTimeout(showTime, 1000);
 }
 
-function createProduct(){
+let timerVar = setInterval(countTimer, 1000);
+let totalSeconds = 0;
+function countTimer() {
+    ++totalSeconds;
+    let hour = Math.floor(totalSeconds /3600);
+    let minute = Math.floor((totalSeconds - hour*3600)/60);
+    let seconds = totalSeconds - (hour*3600 + minute*60);
+        
+    if(hour < 10) {
+        hour = "0"+hour;
+    }    
+        
+    if(minute < 10) {
+        minute = "0"+minute;
+    }
+        
+    if(seconds < 10) {
+        seconds = "0"+seconds;
+        document.getElementById("timer").innerHTML = hour + ":" + minute + ":" + seconds;
+    }
+
+    manufactureTime = hour + ":" + minute + ":" + seconds;
+}
+    
+
+function createProduct(id){
+    productId = id;
     productName = document.getElementById("product_name").value;
     responsibleName = document.getElementById("responsible_name").value;
     selectedPackage = document.form.packages.value;
@@ -142,21 +199,21 @@ function createProduct(){
     //console.log(productName + " " + responsibleName + " " + selectedPackage + " " + selectedType + " " + productionDate);
 
     let product = {
-        position: productPosition,
+        id: productId,
         name: productName,
         type: selectedType,
         date: productionDate,
+        manufacture: manufactureTime, 
         responsible: responsibleName,
         package: selectedPackage,
     };
     
     console.table(product);
 
-    product.position = products.length;
     products = [...products, product];
 }
 
-function editProduct(targetPosition){
+function editProduct(targetId){
     productName = document.getElementById("product_name").value;
     responsibleName = document.getElementById("responsible_name").value;
     selectedPackage = document.form.packages.value;
@@ -173,10 +230,11 @@ function editProduct(targetPosition){
     //console.log(productName + " " + responsibleName + " " + selectedPackage + " " + selectedType + " " + productionDate);
 
     let product = {
-        position: targetPosition,
+        id : targetId,
         name: productName,
         type: selectedType,
         date: productionDate,
+        manufacture: manufactureTime,
         responsible: responsibleName,
         package: selectedPackage,
     };
@@ -184,20 +242,30 @@ function editProduct(targetPosition){
     return product;
 }
 
-function deleteProductByPosition(targetPosition){
-    
-    products.splice(targetPosition, 1);
+function deleteProductById(id, productsList=[]){
+    const index = productsList.findIndex(product => product.id === id);
+    //const index = productsList.findIndex(product => product === id);
+    if (index === -1){
+        alert("No existe ningún producto con ese Id");
+        throw new Error(message="no se encontró el producto");
+        
+    } else {
+        productsList.splice(index, 1);
+        alert("Producto eliminado exitosamente");
+    }
 
 }
 
-function editProductByPosition(targetPosition, editedProduct){
-        
+function editProductById(id, editedProduct, productsList=[]){
+    const index = productsList.findIndex(product => product.id === id);        
 
-    products.splice(targetPosition, 1, editedProduct);
+    products.splice(index, 1, editedProduct);
+    alert("Producto modificado exitosamente");
 }
 
 
 
 // https://codepen.io/afarrar/pen/JRaEjP
 // https://stackoverflow.com/questions/18239430/cannot-set-property-innerhtml-of-null
+// https://stackoverflow.com/questions/5517597/plain-count-up-timer-in-javascript
 
