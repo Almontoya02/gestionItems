@@ -19,7 +19,7 @@ showTime();
 $(document).ready(function() { // esta función es para evitar que haya problemas con alguna etiqueta html antes de ejecutar la consulta
     $("#save_product").click(function() {
         selectedType = $('[name="type"]').val();
-        $("#p1").text(products);
+        // $("#p1").text(products);
     });
 
 });
@@ -36,8 +36,9 @@ form.onsubmit = function(e){
         // createProduct((autoIncrement.toString()));
         createProduct(autoIncrement);
         console.log(products);
-        $("#p1").text(JSON.stringify(products)); // 'convertir' un objeto o JSON en string
+        // $("#p1").text(JSON.stringify(products)); // 'convertir' un objeto o JSON en string
         autoIncrement = autoIncrement + 1;
+        renderDataInTheTable(products);
     } else {
         targetId = parseInt(document.getElementById("edit_input").value);
         const index = products.findIndex(product => product.id === targetId);
@@ -53,7 +54,8 @@ form.onsubmit = function(e){
             let editedProduct = editProduct(targetId);
             editProductById(targetId, editedProduct, products);
             console.log(products);
-            $("#p1").text(JSON.stringify(products)); // 'convertir' un objeto o JSON en string
+            // $("#p1").text(JSON.stringify(products)); // 'convertir' un objeto o JSON en string
+            renderDataInTheTable(products);
             $("#save_product").toggle();
             $("#save_changes").toggle();
             flagEditButton = 0;
@@ -105,7 +107,8 @@ $("#delete_button").click(function() {
     targetId = document.getElementById("delete_input").value;
     deleteProductById(parseInt(targetId), products); // falta pedir confirmación para eliminar
     console.log(products);
-    $("#p1").text(JSON.stringify(products)); // 'convertir' un objeto o JSON en string
+    // $("#p1").text(JSON.stringify(products)); // 'convertir' un objeto o JSON en string
+    renderDataInTheTable(products);
 });
 
 // $("#edit_button").click(function() {
@@ -203,8 +206,8 @@ function createProduct(id){
         name: productName,
         type: selectedType,
         date: productionDate,
-        manufacture: manufactureTime, 
         responsible: responsibleName,
+        manufacture: manufactureTime, 
         package: selectedPackage,
     };
     
@@ -234,8 +237,8 @@ function editProduct(targetId){
         name: productName,
         type: selectedType,
         date: productionDate,
-        manufacture: manufactureTime,
         responsible: responsibleName,
+        manufacture: manufactureTime, 
         package: selectedPackage,
     };
     
@@ -263,6 +266,25 @@ function editProductById(id, editedProduct, productsList=[]){
     alert("Producto modificado exitosamente");
 }
 
+// Duplica el contenido en cada llamado revisar logica
+function renderDataInTheTable(products){
+    let mytable = document.getElementById("html-data-table");
+    // la siguiente linea soluciona el problema de duplicados
+    mytable.innerHTML = "<thead><tr><th>ID</th><th>Nombre producto</th><th>Tipo de producto</th><th>Fecha de producción</th><th>Operario Responsable</th><th>Tiempo de producción</th><th>Tipo de empaque</th></tr></thead>"
+    products.forEach(product => {
+        let newRow = document.createElement("tr");
+        Object.values(product).forEach((value) => {
+            let cell = document.createElement("td");
+            cell.innerText = value;
+            newRow.appendChild(cell);
+        })
+        mytable.appendChild(newRow);
+    });
+}
+
+function fillTable(products){
+    let table = ""
+}
 
 
 // https://codepen.io/afarrar/pen/JRaEjP

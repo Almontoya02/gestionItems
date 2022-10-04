@@ -14,12 +14,40 @@ img{
     width: 50px;
 }
 
+.form--container{
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    border: 1px solid black;
+    border-radius: 5px;
+
+}
+
 .form--product{
+    display: inline-block;
+    width: 100vw;
+}
+
+.div--form{
     display: inline-block;
 }
 
-.cromometer{
-    display: inline;
+.div--form span{
+    display: block;
+}
+
+.button--submit{
+   margin-top: 1rem;
+   margin-bottom: 1rem;
+   margin-left: 3rem;
+   margin-right: 3rem;
+   background-color: #0000ff;
+   border: 1px solid black;
+   border-radius: 5px;
+   color: white;
+}
+
+.cronometer > section {
+    display: inline-block;
 }
 
 .clock {
@@ -28,7 +56,14 @@ img{
     left: 50%;
     /* transform: translateX(-50%) translateY(-50%); */
     color: #17D4FE;
-    font-size: 60px;
+    font-size: 3rem;
     font-family: Orbitron;
     letter-spacing: 7px;
 }
+
+#data-table {
+    border: 1px solid black;
+    border-radius: 5px;
+    margin: 0 auto;
+}
+
